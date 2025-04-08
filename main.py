@@ -177,6 +177,97 @@ def main(page: ft.Page):
                                                            ft.Text("Tabla de Pedidos", weight="w700", size=30),
                                                            ft.padding.only(0, 20, 0, 0)
                                                         ),
+                                                        ft.Container(
+                                                            content=ft.ListView(
+                                                                controls=[
+                                                                    ft.DataTable(
+                                                                        columns=[
+                                                                            ft.DataColumn(ft.Text("Código", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Descripción", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Cantidad", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Destino", size=18, weight="w700")),
+                                                                        ],
+                                                                        rows=[
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("001")),
+                                                                                    ft.DataCell(ft.Text("Producto A")),
+                                                                                    ft.DataCell(ft.Text("10")),
+                                                                                    ft.DataCell(ft.Text("10")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("002")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("003")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("004")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("005")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("006")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("007")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("008")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("006")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                ],
+                                                                            ),
+                                                                            # Agrega más filas aquí según sea necesario
+                                                                        ],
+                                                                    )
+                                                                ],
+                                                                expand=True,  # Permite que el ListView ocupe el espacio disponible
+                                                                height=200,   # Altura fija para habilitar el scroll
+                                                            ),
+                                                        )
                                                     ]
                                                 ),
                                                 ft.padding.only(20, 20, 0, 0)
