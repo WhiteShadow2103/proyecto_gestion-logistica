@@ -3,6 +3,38 @@ import flet as ft
 def main(page: ft.Page):
    
     def route_change(route):
+
+        tabla = ft.DataTable(
+            columns=[
+                 ft.DataColumn(ft.Text("First name")),
+                 ft.DataColumn(ft.Text("Last name")),
+                 ft.DataColumn(ft.Text("Age"), numeric=True),
+             ],
+             rows=[
+                 ft.DataRow(
+                     cells=[
+                         ft.DataCell(ft.Text("John")),
+                         ft.DataCell(ft.Text("Smith")),
+                         ft.DataCell(ft.Text("43")),
+                     ],
+                 ),
+                 ft.DataRow(
+                     cells=[
+                         ft.DataCell(ft.Text("Jack")),
+                         ft.DataCell(ft.Text("Brown")),
+                         ft.DataCell(ft.Text("19")),
+                     ],
+                 ),
+                 ft.DataRow(
+                     cells=[
+                         ft.DataCell(ft.Text("Alice")),
+                         ft.DataCell(ft.Text("Wong")),
+                         ft.DataCell(ft.Text("25")),
+                     ],
+                 ),
+             ],
+        )
+
         page.views.clear()
         page.window.width = 420
         page.window.height = 590
@@ -83,9 +115,8 @@ def main(page: ft.Page):
                                                 alignment=ft.alignment.center_left,
                                                 width=350,
                                                 height=40
-                                            )
-                                            # ft.ElevatedButton(text="Salir", bgcolor="red", height=35, width=65, on_click=lambda _: page.go("/")),
-                                            # ft.Text("Gestion", width=380, size=30, text_align="Left", weight="w900"),
+                                            ),
+                                            
                                         ]
                                     ),
                                     ft.padding.only(20, 20, 0, 0)
@@ -101,13 +132,51 @@ def main(page: ft.Page):
                                             content= ft.Container(
                                                 ft.Column(
                                                     [
-                                                        ft.Text("Datos del Pedido", weight="w700", size=30),
                                                         ft.Container(
-                                                            ft.TextField(width=350, hint_text="Ingrese ID del Pedido", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                            ft.Text("Datos de los Pedidos", weight="w700", size=30),
                                                         ),
                                                         ft.Container(
-                                                            ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True),
-                                                        )
+                                                            ft.Row([
+                                                                ft.Container(
+                                                                    ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                                ),
+                                                                ft.Container(
+                                                                    ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                ),
+                                                                ft.Container(
+                                                                    ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
+                                                                )
+                                                            ])
+                                                        ),
+                                                        ft.Container(
+                                                            ft.Row([
+                                                                ft.Container(
+                                                                    ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                ),
+                                                                ft.Container(
+                                                                    ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                )
+                                                            ]),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.Row([
+                                                                ft.Container(
+                                                                    ft.ElevatedButton(text="Agregar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                ),
+                                                                ft.Container(
+                                                                    ft.ElevatedButton(text="Modificar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                )
+                                                            ]),
+                                                            ft.padding.only(70)
+                                                        ),
+                                                        ft.Container(
+                                                            ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                            ft.padding.only(210)
+                                                        ),
+                                                        ft.Container(
+                                                           ft.Text("Tabla de Pedidos", weight="w700", size=30),
+                                                           ft.padding.only(0, 20, 0, 0)
+                                                        ),
                                                     ]
                                                 ),
                                                 ft.padding.only(20, 20, 0, 0)
@@ -115,11 +184,45 @@ def main(page: ft.Page):
                                         ),
                                         ft.Tab(
                                             text="Trabajadores",
-                                            icon=ft.Icons.PERSON
+                                            icon=ft.Icons.PERSON,
+                                            content= ft.Container(
+                                                ft.Column(
+                                                    [
+                                                        ft.Text("Datos de los Trabajadores", weight="w700", size=30),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Run del Trabajador", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Nombre del Trabajador", color="white", prefix_icon= ft.icons.LOCK),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Código de Trabajador", color="white", prefix_icon= ft.icons.LOCK),
+                                                        )
+                                                    ]
+                                                ),
+                                                ft.padding.only(20, 20, 0, 0)
+                                            )
                                         ),
                                         ft.Tab(
                                             text="Camiones",
-                                            icon=ft.Icons.FIRE_TRUCK
+                                            icon=ft.Icons.FIRE_TRUCK,
+                                            content= ft.Container(
+                                                ft.Column(
+                                                    [
+                                                        ft.Text("Datos de los Camiones", weight="w700", size=30),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Patente del Camión", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Modelo del Camión", color="white", prefix_icon= ft.icons.LOCK),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.TextField(width=350, hint_text="Ingrese Conductor Designado", color="white", prefix_icon= ft.icons.LOCK),
+                                                        )
+                                                    ]
+                                                ),
+                                                ft.padding.only(20, 20, 0, 0)
+                                            )
                                         ),
                                     ],
                                     expand=1,
