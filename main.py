@@ -37,7 +37,7 @@ def main(page: ft.Page):
                         ),
                         # Button para Crear Usuario
                         ft.Container(
-                             ft.TextButton(text="Crear Usuario"),
+                             ft.TextButton(text="Crear Usuario", on_click=lambda e: page.go("/crearUser")),
                             ft.padding.only(150)
                         )
                     ]
@@ -448,6 +448,66 @@ def main(page: ft.Page):
                                     ft.padding.only(20, 0, 20, 20),
                                 )
                             ]),
+                            border_radius=8,
+                            width=1170,
+                            height=740,
+                            gradient=ft.LinearGradient(
+                            colors=[
+                                "#673AB7",
+                                "#003249",
+                            ],
+                        ),
+                        ),
+                    ],
+                )
+            )
+        elif page.route == "/crearUser":
+            page.window.width = 420
+            page.window.height = 590
+            page.vertical_alignment = "center"
+            page.horizontal_alignment = "center"
+            page.views.append(
+                ft.View(
+                    "/crearUser",
+                    [
+                        ft.Container(
+                            content=ft.Column(
+                                [
+                                    ft.Row([
+                                        ft.Text("Crear Usuario", width=380, size=30, text_align="center", weight="w900")
+                                    ]),
+                                    ft.Container(
+                                        content=ft.Column(
+                                            [
+                                                ft.Row([
+                                                    ft.TextField(width=350, hint_text="Ingrese su Nombre", color="white", prefix_icon= ft.icons.LOCK),
+                                                ]),
+                                                ft.Row([
+                                                    ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK),
+                                                ]),
+                                                ft.Row([
+                                                    ft.ElevatedButton(text="Crear Usuario", width=280, height=40, bgcolor="#212121"),
+                                                ]),
+                                                ft.Row([
+                                                    ft.Container(
+                                                        content=ft.Text("Volver"),
+                                                        margin=10,
+                                                        padding=10,
+                                                        alignment=ft.alignment.center,
+                                                        bgcolor=ft.Colors.RED,
+                                                        width=65,
+                                                        height=40,
+                                                        border_radius=10,
+                                                        ink=True,
+                                                        on_click=lambda _: page.go("/"), 
+                                                    ),
+                                                ]),
+                                            ]
+                                        ),
+                                        padding=20,
+                                    )
+                                ]
+                            ),
                             border_radius=8,
                             width=1170,
                             height=740,
