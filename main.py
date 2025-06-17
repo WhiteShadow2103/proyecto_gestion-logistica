@@ -1,8 +1,57 @@
 import flet as ft
+import pymysql as BD
 
+# Configuraciones de la conexion a la Base de Datos #
+conexion = BD.connect(
+    host='localhost',
+    user='root',
+    password='',
+    database='securycargo',
+    port=3306,
+)
+
+cur = conexion.cursor()
+print("Conexión a la base de datos establecida correctamente.")
+cur.close()
+conexion.close()
+
+# Funciones principales de la aplicacion #
 def main(page: ft.Page):
-   
+
+    # Variables de los texfield del Login de Usuario y de Administrador #
+    rut = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.icons.PERSON)
+
+    # Variables de los textfield del Login de Administrador #
+    rutAdmin = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.icons.PERSON)
+    contraseña = ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True)
+    
+    # Variables de Busqueda de Trabajos para el Usuario #
+    codTrabajo = ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.icons.CARD_TRAVEL)
+    
+    # Funcion para el Login Admin #
+    def IngresarAdmin(e):
+        if rutAdmin.value == "21386644-3" and contraseña.value == "1234":
+            rutAdmin.value = ""
+            contraseña.value = ""
+            page.go("/principalAdmin")
+        else:
+            dgl = ft.AlertDialog(title=ft.Text("No se pudo ingresar!!"), content=ft.Text("Es probable que el rut o la contraseña no sean correctos."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+            page.open(dgl)
+            page.update()
+            
+    # Funcion para el Login Usuarios #
+    def IngresarUsuario(e):
+        if rut.value == "21386644-3":
+            rut.value = ""
+            page.go("/principalUsuarios")
+        else:
+            dgl = ft.AlertDialog(title=ft.Text("No se pudo ingresar!!"), content=ft.Text("Es probable que el rut no sea correctos."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+            page.open(dgl)
+            page.update()        
+            
+    # Aplicación principal #
     def route_change(route):
+        # Login del Usuario
         page.views.clear()
         page.window.width = 420
         page.window.height = 590
@@ -17,24 +66,16 @@ def main(page: ft.Page):
                     ft.Column([
                         ft.Container(
                             ft.Text("Iniciar Sesión", width=380, size=30, text_align="center", weight="w900"),
-                            ft.padding.only(10, 100, 0, 20)
+                            ft.padding.only(10, 120, 0, 20)
                         ),
+                        ft.Container(rut, padding=20),
                         ft.Container(
-                            ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.icons.PERSON),
-                            ft.padding.only(20),
-                            
-                        ),
-                        ft.Container(
-                            ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True),
-                            ft.padding.only(20),
-                        ),
-                        ft.Container(
-                            ft.ElevatedButton(text="Ingresar", width=280, height=40, bgcolor="#212121", on_click=lambda e: page.go("/principal")),
+                            ft.ElevatedButton(text="Ingresar", width=280, height=40, bgcolor="#212121", on_click=IngresarUsuario),
                             ft.padding.only(60, 30),
                         ),
                         ft.Container(
-                            ft.TextButton(text="Crear Usuario", on_click=lambda e: page.go("/crearUser")),
-                            ft.padding.only(150)
+                            ft.TextButton(text="Ingresar como Admin", on_click=lambda e: page.go("/loginAdmin")),
+                            ft.padding.only(115)
                         )
                     ]
                     ),
@@ -51,14 +92,57 @@ def main(page: ft.Page):
                 ],
             )
         )
-        if page.route == "/principal":
+        # Login del Administrador
+        if page.route == "/loginAdmin":
+            page.window.width = 420
+            page.window.height = 590
+            page.vertical_alignment = "center"
+            page.horizontal_alignment = "center"
+            page.title = "SecuryCargo"
+            page.views.append(
+                ft.View(
+                    "/loginAdmin",
+                    [
+                    ft.Container(
+                        ft.Column([
+                            ft.Container(
+                                ft.Text("Iniciar Sesión Administrador", width=380, size=30, text_align="center", weight="w900"),
+                                ft.padding.only(10, 50, 0, 20)
+                            ),
+                            ft.Container(rutAdmin, padding=20),
+                            ft.Container(contraseña, padding=20),
+                            ft.Container(
+                                ft.ElevatedButton(text="Ingresar", width=280, height=40, bgcolor="#212121", on_click=IngresarAdmin),
+                                ft.padding.only(60, 30),
+                            ),
+                            ft.Container(
+                                ft.TextButton(text="Salir", on_click=lambda e: page.go("/")),
+                                ft.padding.only(170)
+                            )
+                        ]
+                        ),
+                            border_radius=8,
+                            width=400,
+                            height=530,
+                            gradient=ft.LinearGradient(
+                                colors=[
+                                    "#673AB7",
+                                    "#512DA8",
+                                ],
+                            ),
+                        ),
+                    ],
+                )
+            )
+        # Ventana Principal del Administrador
+        elif page.route == "/principalAdmin":
             page.window.width = 1200
             page.window.height = 800
             page.vertical_alignment = "center"
             page.horizontal_alignment = "center"
             page.views.append(
                 ft.View(
-                    "/principal",
+                    "/principalAdmin",
                     [   
                         ft.Container(
                             ft.Column([
@@ -75,7 +159,7 @@ def main(page: ft.Page):
                                                 height=40,
                                                 border_radius=10,
                                                 ink=True,
-                                                on_click=lambda _: page.go("/"), 
+                                                on_click=lambda _: page.go("/loginAdmin"), 
                                             ),
                                             ft.Container(
                                                 content=ft.Text("Gestión Interna", weight="w900", size=18),
@@ -306,16 +390,13 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Detalle", width=80, height=40, bgcolor="#212121"),
-                                                                ),
-                                                                ft.Container(
                                                                     ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", disabled=True),
                                                                 ),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Cancelar", width=80, height=40, bgcolor="#212121"),
                                                                 ),
                                                             ]),
-                                                            ft.padding.only(120),
+                                                            ft.padding.only(170),
                                                         ),
                                                         ft.Container(
                                                            ft.Text("Tabla de Conductores", weight="w700", size=30),
@@ -563,66 +644,199 @@ def main(page: ft.Page):
                     ],
                 )
             )
-        elif page.route == "/crearUser":
-            page.window.width = 420
-            page.window.height = 590
+        # Ventana Principal de Usuarios
+        elif page.route == "/principalUsuarios":
+            page.window.width = 1200
+            page.window.height = 800
             page.vertical_alignment = "center"
             page.horizontal_alignment = "center"
             page.views.append(
                 ft.View(
-                    "/crearUser",
-                    [
+                    "/principalUsuarios",
+                    [   
                         ft.Container(
-                                ft.Column([
-                                    ft.Container(
-                                        ft.Text("Crear Usuario", width=380, size=30, text_align="center", weight="w900"),
-                                        ft.padding.only(10, 100, 0, 20)
+                            ft.Column([
+                                ft.Container(
+                                    ft.Row(
+                                        [
+                                            ft.Container(
+                                                content=ft.Text("Salir"),
+                                                margin=10,
+                                                padding=10,
+                                                alignment=ft.alignment.center,
+                                                bgcolor=ft.Colors.RED,
+                                                width=65,
+                                                height=40,
+                                                border_radius=10,
+                                                ink=True,
+                                                on_click=lambda _: page.go("/"), 
+                                            ),
+                                            ft.Container(
+                                                content=ft.Text("Gestión Interna", weight="w900", size=18),
+                                                margin=1,
+                                                padding=1,
+                                                alignment=ft.alignment.center_left,
+                                                width=350,
+                                                height=40
+                                            ),
+                                            
+                                        ]
                                     ),
-                                    ft.Container(
-                                        ft.TextField(width=350, hint_text="Ingrese Nombre de Usuario", color="white", prefix_icon= ft.icons.PERSON),
-                                        ft.padding.only(20),
+                                    ft.padding.only(20, 20, 0, 0)
+                                ),
+                                ft.Container(
+                                    ft.Tabs(
+                                    selected_index=1,
+                                    animation_duration=300,
+                                    tabs=[
+                                        ft.Tab(
+                                            text="Trabajos",
+                                            icon=ft.Icons.ADD_BOX,
+                                            content= ft.Container(
+                                                ft.Column(
+                                                    [
+                                                        ft.Container(
+                                                            ft.Text("Datos de los Trabajos", weight="w700", size=30),
+                                                        ),
+                                                        ft.Container(
+                                                            ft.Row([
+                                                                ft.Container(codTrabajo),
+                                                                ft.Container(
+                                                                    ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
+                                                                )
+                                                            ])
+                                                        ),
+                                                        ft.Container(
+                                                           ft.Text("Tabla de Cargas", weight="w700", size=30),
+                                                           ft.padding.only(0, 20, 0, 0)
+                                                        ),
+                                                        ft.Container(
+                                                            content=ft.ListView(
+                                                                controls=[
+                                                                    ft.DataTable(
+                                                                        columns=[
+                                                                            ft.DataColumn(ft.Text("Código", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Origen", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Peso(kg)", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Destino", size=18, weight="w700")),
+                                                                            ft.DataColumn(ft.Text("Estado", size=18, weight="w700")),
+                                                                        ],
+                                                                        rows=[
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("001")),
+                                                                                    ft.DataCell(ft.Text("Producto A")),
+                                                                                    ft.DataCell(ft.Text("10")),
+                                                                                    ft.DataCell(ft.Text("10")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("002")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("003")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("004")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("005")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("006")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("007")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("008")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            ft.DataRow(
+                                                                                cells=[
+                                                                                    ft.DataCell(ft.Text("009")),
+                                                                                    ft.DataCell(ft.Text("Producto B")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("20")),
+                                                                                    ft.DataCell(ft.Text("En Espera")),
+                                                                                ],
+                                                                            ),
+                                                                            # Agrega más filas aquí según sea necesario
+                                                                        ],
+                                                                    )
+                                                                ],
+                                                                expand=True,  # Permite que el ListView ocupe el espacio disponible
+                                                                height=340,   # Altura fija para habilitar el scroll
+                                                            ),
+                                                        )
+                                                    ]
+                                                ),
+                                                ft.padding.only(20, 20, 0, 0)
+                                            )
+                                        ),
+                                    ],
+                                    expand=1,
                                     ),
-                                    ft.Container(
-                                        ft.TextField(width=350, hint_text="Ingrese Run del Usuario", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True),
-                                        ft.padding.only(20),
-                                    ),
-                                    ft.Container(
-                                        ft.TextField(width=350, hint_text="Ingrese una Contraseña", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True),
-                                        ft.padding.only(20),
-                                    ),
-                                    ft.Container(
-                                        ft.ElevatedButton(text="Crear Usuario", width=280, height=40, bgcolor="#212121", on_click=lambda e: page.go("/")),
-                                        ft.padding.only(60, 30),
-                                    ),
-                                    ft.Container(
-                                        content=ft.Text("Salir"),
-                                        margin=10,
-                                        padding=10,
-                                        alignment=ft.alignment.center,
-                                        bgcolor=ft.Colors.RED,
-                                        width=65,
-                                        height=40,
-                                        border_radius=20,
-                                        ink=True,
-                                        on_click=lambda _: page.go("/"), 
-                                    ),
-                                ]
-                            ),
+                                    ft.padding.only(20, 0, 20, 20),
+                                )
+                            ]),
                             border_radius=8,
-                            width=400,
-                            height=530,
+                            width=1170,
+                            height=740,
                             gradient=ft.LinearGradient(
                             colors=[
                                 "#673AB7",
-                                "#512DA8",
+                                "#003249",
                             ],
                         ),
-                    ),
-                ],
+                        ),
+                    ],
                 )
             )
         page.update()
-
+    
     def view_pop(view):
         page.views.pop()
         top_view = page.views[-1]
