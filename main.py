@@ -2,33 +2,102 @@ import flet as ft
 import pymysql as BD
 
 # Configuraciones de la conexion a la Base de Datos #
-conexion = BD.connect(
-    host='localhost',
-    user='root',
-    password='',
-    database='securycargo',
-    port=3306,
-)
+def conectar():
+    return BD.connect(
+        host='localhost',
+        user='root',
+        password='',
+        database='securycargo',
+        port=3306
+    )     
 
-cur = conexion.cursor()
+conn = conectar()
+cur = conn.cursor()
 print("Conexión a la base de datos establecida correctamente.")
 cur.close()
-conexion.close()
+conn.close()
+
 
 # Funciones principales de la aplicacion #
 def main(page: ft.Page):
 
     # Variables de los texfield del Login de Usuario y de Administrador #
-    rut = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.icons.PERSON)
+    rut = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.Icons.PERSON)
 
     # Variables de los textfield del Login de Administrador #
-    rutAdmin = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.icons.PERSON)
-    contraseña = ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.icons.LOCK, password=True, can_reveal_password=True)
+    rutAdmin = ft.TextField(width=350, hint_text="Ingrese su Rut", color="white", prefix_icon= ft.Icons.PERSON)
+    contraseña = ft.TextField(width=350, hint_text="Ingrese su Contraseña", color="white", prefix_icon= ft.Icons.LOCK, password=True, can_reveal_password=True)
     
     # Variables de Busqueda de Trabajos para el Usuario #
-    codTrabajo = ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.icons.CARD_TRAVEL)
+    codTrabajo = ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.Icons.CARD_TRAVEL)
     
-    # Funcion para el Login Admin #
+    # Variables de Agregar Conductores para el Administrador #
+    rutConductor = ft.TextField(width=350, hint_text="Ingrese Rut del Conductor", color="white", prefix_icon= ft.Icons.CARD_TRAVEL)
+    nombreConductor = ft.TextField(width=350, hint_text="Ingrese su Nombre", color="white", prefix_icon= ft.Icons.LOCK)
+    apellidoConductor = ft.TextField(width=350, hint_text="Ingrese su Apellido", color="white", prefix_icon= ft.Icons.LOCK)
+    
+    # --- Funciones de la Base de Datos --- #
+    def BuscarTrabajoUsuario(codTrabajo):
+        print("Bucle establecido")
+        if codTrabajo == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("Debe ingresar un código de trabajo."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+            page.open(dgl)
+        else: 
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM trabajo WHERE codigo = %s", (codTrabajo,))
+            print("Conexion conseguida")
+            conn.commit()
+            cur.close()
+            conn.close()
+            codTrabajo.value = ""
+            page.update()  
+    
+    def AgregarConductorAd(rut, nombre, apellido):
+        if rut == "" or nombre == "" or apellido == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("Debe completar todos los campos."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+            page.open(dgl)
+        else:
+            try:
+                conn = conectar()
+                cur = conn.cursor()
+                cur.execute("INSERT INTO conductor (rut, nombre, apellido) VALUES (%s, %s, %s)", (rut, nombre, apellido,))
+                dgl = ft.AlertDialog(title=ft.Text("Éxito"), content=ft.Text("Conductor agregado correctamente."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+                page.open(dgl)
+                conn.commit()
+            except BD.Error as e:
+                dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo agregar el conductor: {e}"), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+                page.open(dgl)
+            finally:
+                cur.close()
+                conn.close()
+                rutConductor.value = ""
+                nombreConductor.value = ""
+                apellidoConductor.value = ""
+                page.update()
+
+    def EliminarConductorAd(rut):
+        if rut == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("No pueden estar vacios los campos."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+            page.open(dgl)
+        else:
+            try:
+                conn = conectar()
+                cur = conn.cursor()
+                cur.execute("DELETE FROM conductor WHERE rut = %s", (rut,))
+                dgl = ft.AlertDialog(title=ft.Text("Éxito"), content=ft.Text("Conductor eliminado correctamente."), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+                page.open(dgl)
+                conn.commit()
+            except BD.Error as e:
+                dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo eliminar el conductor: {e}"), alignment=ft.alignment.center, on_dismiss=lambda e: print("Dialog dismissed!"), title_padding=ft.padding.all(25))
+                page.open(dgl)
+            finally:
+                cur.close()
+                conn.close()
+                rutConductor.value = ""
+                page.update()       
+                 
+    # --- Funcion para el Login Admin --- #
     def IngresarAdmin(e):
         if rutAdmin.value == "21386644-3" and contraseña.value == "1234":
             rutAdmin.value = ""
@@ -39,7 +108,7 @@ def main(page: ft.Page):
             page.open(dgl)
             page.update()
             
-    # Funcion para el Login Usuarios #
+    # --- Funcion para el Login Usuarios --- #
     def IngresarUsuario(e):
         if rut.value == "21386644-3":
             rut.value = ""
@@ -52,7 +121,6 @@ def main(page: ft.Page):
     # Aplicación principal #
     def route_change(route):
         # Login del Usuario
-        page.views.clear()
         page.window.width = 420
         page.window.height = 590
         page.vertical_alignment = "center"
@@ -191,10 +259,10 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.Icons.CARD_TRAVEL),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Origen", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Origen", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
                                                                 ),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
@@ -204,10 +272,10 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Peso de la Carga", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Peso de la Carga", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Destino", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Destino", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
                                                                 )
                                                             ]),
                                                         ),
@@ -357,21 +425,15 @@ def main(page: ft.Page):
                                                         ),
                                                         ft.Container(
                                                             ft.Row([
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Rut del Conductor", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
-                                                                ),
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese su Nombre", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
-                                                                ),
-                                                                ft.Container(
-                                                                    ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
-                                                                )
+                                                                ft.Container(rutConductor),
+                                                                ft.Container(nombreConductor),
+                                                                ft.Container(apellidoConductor),
                                                             ])
                                                         ),
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Patente Asignada", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Patente Asignada", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
                                                                 )
                                                             ]),
                                                             ft.padding.only(180)
@@ -379,7 +441,7 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Agregar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                    ft.ElevatedButton(text="Agregar", width=280, height=40, bgcolor="#212121", on_click=lambda e: AgregarConductorAd(rutConductor.value, nombreConductor.value, apellidoConductor.value)),
                                                                 ),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Modificar", width=280, height=40, bgcolor="#212121", disabled=True),
@@ -390,7 +452,7 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                    ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", on_click=lambda e: EliminarConductorAd(rutConductor.value)),
                                                                 ),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Cancelar", width=80, height=40, bgcolor="#212121"),
@@ -510,10 +572,10 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Patente del Camión", color="white", prefix_icon= ft.icons.CARD_TRAVEL),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Patente del Camión", color="white", prefix_icon= ft.Icons.CARD_TRAVEL),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Modelo del Camión", color="white", prefix_icon= ft.icons.LOCK, disabled=True),
+                                                                    ft.TextField(width=350, hint_text="Ingrese Modelo del Camión", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
                                                                 ),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
@@ -650,6 +712,7 @@ def main(page: ft.Page):
             page.window.height = 800
             page.vertical_alignment = "center"
             page.horizontal_alignment = "center"
+            page.views.clear()
             page.views.append(
                 ft.View(
                     "/principalUsuarios",
@@ -702,7 +765,7 @@ def main(page: ft.Page):
                                                             ft.Row([
                                                                 ft.Container(codTrabajo),
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
+                                                                    ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121", on_click=lambda e: BuscarTrabajoUsuario(codTrabajo.value))
                                                                 )
                                                             ])
                                                         ),
