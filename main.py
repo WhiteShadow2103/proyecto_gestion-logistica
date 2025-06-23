@@ -1,5 +1,6 @@
 import flet as ft
 import pymysql as BD
+import datetime as dt
 
 # Configuraciones de la conexion a la Base de Datos #
 def conectar():
@@ -264,6 +265,123 @@ def main(page: ft.Page):
         marcaCamiones.value = ""
         page.update()
 
+    # --- Funciones del Tab Trabajos --- #
+
+    def AgregarTrabajoAd(codigo, origen, destino, fecha, estado):
+        if codigo == "" or origen == "" or destino == "" or fecha == "" or estado == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("Debe completar todos los campos."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        try:
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("INSERT INTO guia (id_guia, id_origen, id_destino, fecha, estado) VALUES (%s, %s, %s, %s, %s)", (codigo, origen, destino, fecha, estado,))
+            dgl = ft.AlertDialog(title=ft.Text("Éxito"), content=ft.Text("Trabajo agregado correctamente."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            conn.commit()
+            page.update()
+        except BD.Error as e:
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo agregar el trabajo: {e}"), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        finally:
+            cur.close()
+            conn.close()
+            LimpiarCamposTrabajos()
+            Recargar_TablaTrabajos()
+            page.update()
+
+    def EliminarTrabajoAd(codigo):
+        if codigo == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("No pueden estar vacios los campos."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        try:
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("DELETE FROM guia WHERE id_guia = %s", (codigo,))
+            dgl = ft.AlertDialog(title=ft.Text("Éxito"), content=ft.Text("Trabajo eliminado correctamente."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            conn.commit()
+        except BD.Error as e:
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo eliminar el trabajo: {e}"), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        finally:
+            cur.close()
+            conn.close()
+            codigoTrabajo.value = ""
+            Recargar_TablaTrabajos()
+            page.update()
+            
+    def ModificarTrabajoAd(codigo, origen, destino, fecha, estado):
+        if codigo == "":
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text("No pueden estar vacios los campos."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        try:
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("UPDATE guia SET id_origen = %s, id_destino = %s, fecha = %s, estado = %s WHERE id_guia = %s", (origen, destino, fecha, estado, codigo,))
+            dgl = ft.AlertDialog(title=ft.Text("Éxito"), content=ft.Text("Trabajo modificado correctamente."), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            conn.commit()
+        except BD.Error as e:
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo modificar el trabajo: {e}"), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        finally:
+            cur.close()
+            conn.close()
+            LimpiarCamposTrabajos()
+            Recargar_TablaTrabajos()
+            page.update()
+
+    tabla_Trabajos = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("Código", size=18, weight="w700")),
+            ft.DataColumn(ft.Text("Origen", size=18, weight="w700")),
+            ft.DataColumn(ft.Text("Destino", size=18, weight="w700")),
+            ft.DataColumn(ft.Text("Fecha de Entrega", size=18, weight="w700")),
+            ft.DataColumn(ft.Text("Estado", size=18, weight="w700"))
+        ],
+    rows=[])
+    def Recargar_TablaTrabajos():
+        tabla_Trabajos.rows.clear()
+        try:
+            conn = conectar()
+            cur = conn.cursor()
+            cur.execute("SELECT id_guia, id_origen, id_destino, fecha, estado FROM guia")
+            resultados = cur.fetchall()
+            for row in resultados:
+                tabla_Trabajos.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(row[0])),
+                            ft.DataCell(ft.Text(row[1])),
+                            ft.DataCell(ft.Text(row[2])),
+                            ft.DataCell(ft.Text(row[3])),
+                            ft.DataCell(ft.Text(row[4])),
+                        ]
+                    )
+                )
+        except BD.Error as e:
+            dgl = ft.AlertDialog(title=ft.Text("Error"), content=ft.Text(f"No se pudo cargar la tabla de trabajos: {e}"), alignment=ft.alignment.center, title_padding=ft.padding.all(25))
+            dgl.open = True
+            page.update()
+        finally:
+            cur.close()
+            conn.close()
+            page.update()
+
+    def LimpiarCamposTrabajos():
+        codigoTrabajo.value = ""
+        lugarOrigen.value = ""
+        lugarDestino.value = ""
+        estadoTrabajo.value = ""
+        fechaEntrega_text.value = ""
+        page.update()
+
     # --- Funcion para el Login Admin --- #
     def IngresarAdmin(e):
         if rutAdmin.value == "21386644-3" and contraseña.value == "1234":
@@ -306,7 +424,29 @@ def main(page: ft.Page):
     modeloCamiones = ft.TextField(width=350, hint_text="Ingrese Modelo del Camión", color="white", prefix_icon= ft.Icons.LOCK)
     marcaCamiones = ft.TextField(width=350, hint_text="Ingrese Marca del Camión", color="white", prefix_icon= ft.Icons.LOCK)
 
+    codigoTrabajo = ft.TextField(width=350, hint_text="Ingrese Código de la Entrega", color="white", prefix_icon= ft.Icons.CARD_TRAVEL)
+    lugarOrigen = ft.TextField(width=350, hint_text="Ingrese Origen", color="white", prefix_icon= ft.Icons.LOCK)
+    lugarDestino= ft.TextField(width=350, hint_text="Ingrese Destino", color="white", prefix_icon= ft.Icons.LOCK)
+    estadoTrabajo = ft.TextField(width=350, hint_text="Ingrese Estado de Entrega", color="white", prefix_icon= ft.Icons.LOCK)
+
     btn_cancelar = ft.ElevatedButton(text="Cancelar", width=80, height=40, bgcolor="#212121", on_click=lambda e: LimpiarCamposConductores())
+
+    # Control del Boton de Fecha #
+    fechaEntrega_picker = ft.DatePicker(first_date=dt.date(2024, 1, 1), last_date=dt.date(2035, 12, 31))
+    fechaEntrega_text = ft.TextField( width=350, hint_text="Ingrese Fecha de Entrega", color="white", prefix_icon= ft.Icons.CALENDAR_MONTH, read_only=True, disabled=True)
+    page.overlay.append(fechaEntrega_picker)
+
+    def abrir_fecha_picker(e):
+        fechaEntrega_picker.open = True
+        page.update()
+
+    btn_abrir_fecha = ft.IconButton(icon=ft.Icons.CALENDAR_MONTH, icon_color="#FFFFFF", icon_size=40, tooltip="Seleccionar Fecha", on_click=abrir_fecha_picker)
+
+    def actualizar_fecha_text(e):
+        fechaEntrega_text.value = str(fechaEntrega_picker.value) or ""
+        page.update()
+
+    fechaEntrega_picker.on_change = actualizar_fecha_text
              
     # Aplicación principal #
     def route_change(route):
@@ -396,6 +536,7 @@ def main(page: ft.Page):
         elif page.route == "/principalAdmin":
             Recargar_TablaConductores()
             Recargar_TablaCamiones()
+            Recargar_TablaTrabajos()
             page.window.width = 1200
             page.window.height = 800
             page.vertical_alignment = "center"
@@ -450,12 +591,9 @@ def main(page: ft.Page):
                                                         ),
                                                         ft.Container(
                                                             ft.Row([
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Código del Pedido", color="white", prefix_icon= ft.Icons.CARD_TRAVEL),
-                                                                ),
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Origen", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
-                                                                ),
+                                                                ft.Container(codigoTrabajo),
+                                                                ft.Container(lugarOrigen),
+                                                                ft.Container(lugarDestino),
                                                                 ft.Container(
                                                                     ft.ElevatedButton(text="Buscar", width=80, height=40, bgcolor="#212121")
                                                                 )
@@ -463,21 +601,18 @@ def main(page: ft.Page):
                                                         ),
                                                         ft.Container(
                                                             ft.Row([
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Peso de la Carga", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
-                                                                ),
-                                                                ft.Container(
-                                                                    ft.TextField(width=350, hint_text="Ingrese Destino", color="white", prefix_icon= ft.Icons.LOCK, disabled=True),
-                                                                )
+                                                                ft.Container(estadoTrabajo),
+                                                                ft.Container(ft.Column([fechaEntrega_text])),
+                                                                ft.Container(btn_abrir_fecha, padding=ft.padding.only(10, 0, 0, 0))
                                                             ]),
                                                         ),
                                                         ft.Container(
                                                             ft.Row([
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Agregar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                    ft.ElevatedButton(text="Agregar", width=280, height=40, bgcolor="#212121",  on_click=lambda e: AgregarTrabajoAd(codigoTrabajo.value, lugarOrigen.value, lugarDestino.value, fechaEntrega_picker.value, estadoTrabajo.value)),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Modificar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                    ft.ElevatedButton(text="Modificar", width=280, height=40, bgcolor="#212121", on_click=lambda e: ModificarTrabajoAd(codigoTrabajo.value, lugarOrigen.value, lugarDestino.value, fechaEntrega_picker.value, estadoTrabajo.value)),
                                                                 )
                                                             ]),
                                                             ft.padding.only(70)
@@ -488,10 +623,10 @@ def main(page: ft.Page):
                                                                     ft.ElevatedButton(text="Detalle", width=80, height=40, bgcolor="#212121"),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", disabled=True),
+                                                                    ft.ElevatedButton(text="Eliminar", width=280, height=40, bgcolor="#212121", on_click=lambda e: EliminarTrabajoAd(codigoTrabajo.value)),
                                                                 ),
                                                                 ft.Container(
-                                                                    ft.ElevatedButton(text="Cancelar", width=80, height=40, bgcolor="#212121"),
+                                                                    ft.ElevatedButton(text="Cancelar", width=80, height=40, bgcolor="#212121", on_click=lambda e: LimpiarCamposTrabajos()),
                                                                 ),
                                                             ]),
                                                             ft.padding.only(120),
@@ -503,99 +638,7 @@ def main(page: ft.Page):
                                                         ft.Container(
                                                             content=ft.ListView(
                                                                 controls=[
-                                                                    ft.DataTable(
-                                                                        columns=[
-                                                                            ft.DataColumn(ft.Text("Código", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Origen", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Peso(kg)", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Destino", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Estado", size=18, weight="w700")),
-                                                                        ],
-                                                                        rows=[
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("001")),
-                                                                                    ft.DataCell(ft.Text("Producto A")),
-                                                                                    ft.DataCell(ft.Text("10")),
-                                                                                    ft.DataCell(ft.Text("10")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("002")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("003")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("004")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("005")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("006")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("007")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("008")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("006")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            # Agrega más filas aquí según sea necesario
-                                                                        ],
-                                                                    )
+                                                                    tabla_Trabajos
                                                                 ],
                                                                 expand=True,  # Permite que el ListView ocupe el espacio disponible
                                                                 height=200,   # Altura fija para habilitar el scroll
@@ -804,105 +847,13 @@ def main(page: ft.Page):
                                                             ])
                                                         ),
                                                         ft.Container(
-                                                           ft.Text("Tabla de Cargas", weight="w700", size=30),
+                                                           ft.Text("Tabla de Trabajos", weight="w700", size=30),
                                                            ft.padding.only(0, 20, 0, 0)
                                                         ),
                                                         ft.Container(
                                                             content=ft.ListView(
                                                                 controls=[
-                                                                    ft.DataTable(
-                                                                        columns=[
-                                                                            ft.DataColumn(ft.Text("Código", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Origen", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Peso(kg)", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Destino", size=18, weight="w700")),
-                                                                            ft.DataColumn(ft.Text("Estado", size=18, weight="w700")),
-                                                                        ],
-                                                                        rows=[
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("001")),
-                                                                                    ft.DataCell(ft.Text("Producto A")),
-                                                                                    ft.DataCell(ft.Text("10")),
-                                                                                    ft.DataCell(ft.Text("10")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("002")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("003")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("004")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("005")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("006")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("007")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("008")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            ft.DataRow(
-                                                                                cells=[
-                                                                                    ft.DataCell(ft.Text("009")),
-                                                                                    ft.DataCell(ft.Text("Producto B")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("20")),
-                                                                                    ft.DataCell(ft.Text("En Espera")),
-                                                                                ],
-                                                                            ),
-                                                                            # Agrega más filas aquí según sea necesario
-                                                                        ],
-                                                                    )
+                                                                    tabla_Trabajos
                                                                 ],
                                                                 expand=True,  # Permite que el ListView ocupe el espacio disponible
                                                                 height=340,   # Altura fija para habilitar el scroll
