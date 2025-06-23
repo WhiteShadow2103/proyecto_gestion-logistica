@@ -26,8 +26,6 @@ def main(page: ft.Page):
         except BD.Error as e:
             print(f"Error de conexión a la base de datos: {e}")
             return False
-
-     # --- Funciones de la Base de Datos --- #
     
     # --- Funcion del Tab del Usuario --- #
     def BuscarTrabajoUsuario(codTrabajo):
@@ -384,7 +382,7 @@ def main(page: ft.Page):
 
     # --- Funcion para el Login Admin --- #
     def IngresarAdmin(e):
-        if rutAdmin.value == "21386644-3" and contraseña.value == "1234":
+        if rutAdmin.value == "admin" and contraseña.value == "admin":
             rutAdmin.value = ""
             contraseña.value = ""
             page.go("/principalAdmin")
@@ -469,11 +467,11 @@ def main(page: ft.Page):
                         ft.Container(rut, padding=20),
                         ft.Container(
                             btn_LoginUsuario,
-                            ft.padding.only(60, 30),
+                            ft.padding.only(50, 30),
                         ),
                         ft.Container(
                             btn_LoginAdmin,
-                            ft.padding.only(120)
+                            ft.padding.only(110)
                         )
                     ]
                     ),
@@ -511,11 +509,11 @@ def main(page: ft.Page):
                             ft.Container(contraseña, padding=20),
                             ft.Container(
                                 ft.ElevatedButton(text="Ingresar", width=280, height=40, bgcolor="#212121", on_click=IngresarAdmin),
-                                ft.padding.only(60, 30),
+                                ft.padding.only(50, 30),
                             ),
                             ft.Container(
                                 ft.TextButton(text="Salir", on_click=lambda e: page.go("/")),
-                                ft.padding.only(170)
+                                ft.padding.only(160)
                             )
                         ]
                         ),
